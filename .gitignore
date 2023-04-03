@@ -1,2 +1,2 @@
 *.pyc
-/scanHouse/__pyache__/**
+/scanHouse/__pyache__/*.pyc
