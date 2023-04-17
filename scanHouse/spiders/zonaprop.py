@@ -6,7 +6,7 @@ from ..items import PropItem
 class ZonapropSpider(scrapy.Spider):
     name = "zonaprop"
     allowed_domains = ["www.zonaprop.com.ar"]
-    start_urls = ["https://www.zonaprop.com.ar/casas-departamentos-ph-alquiler-capital-federal-publicado-hace-menos-de-60-dias.html"]
+    start_urls = ["https://www.zonaprop.com.ar/casas-departamentos-ph-alquiler-capital-federal-publicado-hace-menos-de-1-semana.html"]
     HEADERS = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -26,8 +26,8 @@ class ZonapropSpider(scrapy.Spider):
             yield SplashRequest(url, callback=self.parse, headers=self.HEADERS)
 
     def parse(self, response):
-        a = response.xpath('//div[has-class("postings-container")]/div')
-        for i in a:
+        url_containers = response.xpath('//div[has-class("postings-container")]/div')
+        for i in url_containers:
             yield SplashRequest(self.props_url + i.xpath("./div/@data-to-posting").extract_first(),
                                 callback=self.parse_prop, headers=self.HEADERS)
         url = response.xpath("//a[@class='sc-n5babu-2 gudFvk']/@href").extract_first()

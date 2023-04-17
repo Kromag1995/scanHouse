@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
 import numpy as np
-
+from datetime import datetime
 import plotly.express as px
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 
@@ -9,9 +9,12 @@ conn = sqlite3.connect("../scan_house.db")
 
 df = pd.read_sql("SELECT * FROM props", conn)
 
-df2 = df.loc[:, ["m2_cub", "price", "currency", "location", "url"]]
+df2 = df.loc[:, ["m2_cub", "price", "currency", "location", "url", "date_created"]]
 
 df2 = df2[df2["price"] > 10]
+df2["date_created"] = pd.to_datetime(df2["date_created"])
+
+dates = [datetime(2023, 4, 1+7*i) for i in range(0, 3)]
 
 df2["price_off"] = np.where(df2["currency"] == "USD", df2["price"] * 200, df2["price"])
 df2["price_blue"] = np.where(df2["currency"] == "USD", df2["price"] * 400, df2["price"])
@@ -46,6 +49,9 @@ app.layout = html.Div([
             dcc.Dropdown(options=options, value="all", id="radio_items")
         ]),
         html.Div(children=[
+            dcc.Dropdown(options=dates, value=dates[2], id="initial_date")
+        ]),
+        html.Div(children=[
             dash_table.DataTable(data=df2.to_dict("records"), page_size=10, id="table"),
             ]),
         html.Div(children=[
@@ -61,14 +67,16 @@ app.layout = html.Div([
     Input(component_id="m2_min", component_property="value"),
     Input(component_id="m2_max", component_property="value"),
     Input(component_id="price_min", component_property="value"),
-    Input(component_id="price_max", component_property="value")
+    Input(component_id="price_max", component_property="value"),
+    Input(component_id="initial_date", component_property="value")
 )
 def update_graph_filter(
         col,
         m2_min,
         m2_max,
         price_min,
-        price_max
+        price_max,
+        initial_date
     ):
     if not m2_max:
         m2_max = 200
@@ -82,12 +90,15 @@ def update_graph_filter(
         df3 = df2[df2["location"] == col]
     else:
         df3 = df2[:]
+    if not initial_date:
+        initial_date = dates[2]
     df3 = df3[
         (df3["m2_cub"] > float(m2_min)) &
         (df3["m2_cub"] < float(m2_max)) &
         (df3["price"] > float(price_min)) &
-        (df3["price"] < float(price_max))
-    ]
+        (df3["price"] < float(price_max)) &
+        (df3["date_created"] > initial_date)
+        ]
     fig = px.scatter(df3,
                      x="m2_cub",
                      y="price_blue",
