@@ -5,10 +5,12 @@ from datetime import datetime
 import plotly.express as px
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 
-conn = sqlite3.connect("../scan_house.db")
+#Connect to db
+conn = sqlite3.connect("./scan_house.db")
 
 df = pd.read_sql("SELECT * FROM props", conn)
 
+#Clean data
 df2 = df.loc[:, ["m2_cub", "price", "currency", "location", "url", "date_created"]]
 
 df2 = df2[df2["price"] > 10]
@@ -25,11 +27,15 @@ df2["p/m_total_blue"] = df2["price"]/df2["m2_cub"]
 
 df2 = df2.sort_values(by=["p/m_total_blue"])
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+#Create app
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 options = list(set(df2["location"])) + ["all"]
+
+#Add layout
 
 app.layout = html.Div([
     html.Div(children=[
