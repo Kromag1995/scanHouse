@@ -2,7 +2,7 @@ from datetime import datetime
 
 from dash import html, dash_table, dcc, callback, Output, Input
 import plotly.express as px
-import numpy as np
+import dash_bootstrap_components as dbc
 
 from data import df2
 
@@ -17,48 +17,46 @@ options = list(set(df2["location"])) + ["all"]
 
 general_view = html.Div([
     html.Div(children=[
-        html.Div(children=[
-            dcc.Input(placeholder="m2_min", id="m2_min", value=""),
-        ], className="three columns"),
-        html.Div(children=[
-            dcc.Input(placeholder="m2_max", id="m2_max", value=""),
-        ], className="three columns"),
-        html.Div(children=[
-            dcc.Input(placeholder="price_min", id="price_min", value=""),
+        dbc.Row([
+            dbc.Col([
+                dcc.Input(placeholder="m2_min", id="gv_m2_min", value=""),
+                dcc.Input(placeholder="m2_max", id="gv_m2_max", value=""),
+                dcc.Input(placeholder="price_min", id="gv_price_min", value=""),
+                dcc.Input(placeholder="price_max", id="gv_price_max", value=""),
+            ]),
         ]),
-        html.Div(children=[
-            dcc.Input(placeholder="price_max", id="price_max", value=""),
-        ]),
-        html.Div(children=[
-            dcc.Dropdown(options=options, value="all", id="locations")
-        ]),
-        html.Div(children=[
-            dcc.Dropdown(options=dates, value=dates[2], id="initial_date")
-        ]),
-        html.Div(children=[
-            dcc.Dropdown(options=["USD", "$"], value="$", id="gv_currency")
-        ]),
-        html.Div(children=[
-            dcc.Input(placeholder="Valor Dolar", id="gv_dolar", value=""),
+        dbc.Row([
+            dbc.Col([
+                dcc.Dropdown(options=options, value="all", id="gv_locations"),
+            ]),
+            dbc.Col([
+                dcc.Dropdown(options=["USD", "$"], value="$", id="gv_currency"),
+            ]),
+            dbc.Col([
+                dcc.Dropdown(options=dates, value=dates[-1], id="gv_initial_date"),
+            ]),
+            dbc.Col([
+                dcc.Input(placeholder="Valor Dolar", id="gv_dolar", value="")
+            ]),
         ]),
         html.Div(children=[
             dash_table.DataTable(data=df2.to_dict("records"), page_size=10, id="table"),
             ]),
         html.Div(children=[
-            dcc.Graph(figure={}, id="genera-graph")
+            dcc.Graph(figure={}, id="gv_graph")
             ])
     ])
 ])
 
 
 @callback(
-    Output(component_id="genera-graph", component_property="figure"),
-    Input(component_id="locations", component_property="value"),
-    Input(component_id="m2_min", component_property="value"),
-    Input(component_id="m2_max", component_property="value"),
-    Input(component_id="price_min", component_property="value"),
-    Input(component_id="price_max", component_property="value"),
-    Input(component_id="initial_date", component_property="value"),
+    Output(component_id="gv_graph", component_property="figure"),
+    Input(component_id="gv_locations", component_property="value"),
+    Input(component_id="gv_m2_min", component_property="value"),
+    Input(component_id="gv_m2_max", component_property="value"),
+    Input(component_id="gv_price_min", component_property="value"),
+    Input(component_id="gv_price_max", component_property="value"),
+    Input(component_id="gv_initial_date", component_property="value"),
     Input(component_id="gv_currency", component_property="value"),
     Input(component_id="gv_dolar", component_property="value")
 )
@@ -108,9 +106,9 @@ def update_graph_filter(
 
 @callback(
     Output(component_id="table", component_property="data"),
-    Input(component_id="locations", component_property="value"),
-    Input(component_id="genera-graph", component_property="selectedData"),
-    Input(component_id="initial_date", component_property="value"),
+    Input(component_id="gv_locations", component_property="value"),
+    Input(component_id="gv_graph", component_property="selectedData"),
+    Input(component_id="gv_initial_date", component_property="value"),
     Input(component_id="gv_currency", component_property="value"),
     Input(component_id="gv_dolar", component_property="value")
 )
