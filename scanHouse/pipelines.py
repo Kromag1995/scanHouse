@@ -25,7 +25,7 @@ class ScanhousePipeline:
         prop.m2_total = float(item.get("m2_total", 1))
         prop.m2_cub = float(item.get("m2_cub", 1))
         prop.direction = item.get("direction")
-        prop.location = item.get("location", "")
+        prop.location = item.get("location", "").lower().strip()
         prop.price = float(item.get("price", 1))
         prop.expens = float(item.get("expens", 1))
         prop.currency = item.get("currency", "")

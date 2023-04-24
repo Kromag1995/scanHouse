@@ -16,8 +16,11 @@ location_compare_view = html.Div([
             dcc.Dropdown(options=["USD", "$"], value="$", id="lc_currency")
         ]),
         html.Div(children=[
+            dcc.Input(placeholder="Valor Dolar", id="lc_dolar", value=""),
+        ]),
+        html.Div(children=[
             dcc.Graph(figure={}, id="lc_graph")
-            ])
+        ])
     ])
 ])
 
@@ -25,11 +28,13 @@ location_compare_view = html.Div([
 @callback(
     Output(component_id="lc_graph", component_property="figure"),
     Input(component_id="lc_initial_date", component_property="value"),
-    Input(component_id="lc_currency", component_property="value")
+    Input(component_id="lc_currency", component_property="value"),
+    Input(component_id="lc_dolar", component_property="value")
 )
 def update_graph_filter(
         initial_date,
-        currency
+        currency,
+        dolar
     ):
     if not initial_date:
         initial_date = dates[-1]
@@ -37,6 +42,8 @@ def update_graph_filter(
         (df2["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) &
         (df2["currency"] == currency)
     ]
+    if currency == "USD" and dolar:
+        df3["price"] = df3["price"]*float(dolar)
     df3["p/m"] = df3["price"] / df3["m2_cub"]
     mean_price = df3.groupby("location")["p/m"].median().sort_values()
     fig = px.scatter(x=mean_price.keys(),
