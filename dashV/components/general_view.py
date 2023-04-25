@@ -4,14 +4,9 @@ from dash import html, dash_table, dcc, callback, Output, Input
 import plotly.express as px
 import dash_bootstrap_components as dbc
 
-from data import df2
+from data_transformation.data import df2, dates
 
-dates = list(set(df2["date_created"]))
-dates.sort()
-
-df2["p/m_cub"] = df2["price"]/df2["m2_cub"]
-
-df2 = df2.sort_values(by=["p/m_cub"])
+df2 = df2.sort_values(by=["p/m"])
 options = list(set(df2["location"])) + ["all"]
 
 
@@ -78,23 +73,19 @@ def update_graph_filter(
         price_max = 250_000
     if not price_min:
         price_min = 60_000
-    if locations != "all":
-        df3 = df2[df2["location"] == locations]
-    else:
-        df3 = df2[:]
     if not initial_date:
-        initial_date = dates[2]
+        initial_date = dates[-1]
     if currency == "USD" and dolar:
-        df3["price"] = df3["price"] * float(dolar)
-    df3 = df3[
-        (df3["m2_cub"] > float(m2_min)) &
-        (df3["m2_cub"] < float(m2_max)) &
-        (df3["price"] > float(price_min)) &
-        (df3["price"] < float(price_max)) &
-        (df3["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) &
-        (df3["currency"] == currency)
-        ]
-    fig = px.scatter(df3,
+        df2["price"] = df2["price"] * float(dolar)
+    mask = (df2["m2_cub"] > float(m2_min)) & \
+        (df2["m2_cub"] < float(m2_max)) & \
+        (df2["price"] > float(price_min)) & \
+        (df2["price"] < float(price_max)) & \
+        (df2["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) & \
+        (df2["currency"] == currency)
+    if locations != "all":
+        mask = (df2["location"] == locations) & mask
+    fig = px.scatter(df2[mask],
                      x="m2_cub",
                      y="price",
                      labels={"m2_cub": "m2", "price": "Precio"},
@@ -132,4 +123,4 @@ def update_table(
         (df3["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) &
         (df3["currency"] == currency)
     ]
-    return df3.sort_values(by=["p/m_cub"]).to_dict("records")
+    return df3.sort_values(by=["p/m"]).to_dict("records")

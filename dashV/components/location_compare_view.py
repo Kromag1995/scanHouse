@@ -1,12 +1,10 @@
+from datetime import datetime
+
 from dash import html, dcc, callback, Output, Input
 import plotly.express as px
-from datetime import datetime
 import dash_bootstrap_components as dbc
 
-from data import df2
-
-dates = list(set(df2["date_created"]))
-dates.sort()
+from data_transformation.data import df2, dates
 
 location_compare_view = html.Div([
     html.Div(children=[
@@ -48,23 +46,19 @@ location_compare_view = html.Div([
     Input(component_id="lc_dolar", component_property="value")
 )
 def update_graph_filter(
-        initial_date=None,
-        currency="$",
+        initial_date,
+        currency,
         dolar=None
     ):
     if not initial_date:
         initial_date = dates[-1]
-    df3 = df2[
-        (df2["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) &
-        (df2["currency"] == currency)
-    ]
-    if currency == "USD" and dolar:
-        df3["price"] = df3["price"]*float(dolar)
-    df3.loc[:,"p/m"] = df3["price"] / df3["m2_cub"]
-    mean_price = df3.groupby("location")["p/m"].median().sort_values()
+    if not currency:
+        currency = "$"
+    mask = (df2["date_created"] >= datetime.strptime(initial_date, "%Y-%m-%d").date()) &\
+           (df2["currency"] == currency)
+    mean_price = df2[mask].groupby("location")["p/m"].median().sort_values(ascending=False)
     fig = px.scatter(x=mean_price.keys(),
                      y=mean_price.values,
                      labels={"x": "location", "y": "p/m"},
                      )
-    fig.update_yaxes(range=[1_000, 6_000])
     return fig

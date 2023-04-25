@@ -1,7 +1,12 @@
+
 from dash import Dash, dcc, html
-from general_view import general_view
-from location_compare_view import location_compare_view
+
 import dash_bootstrap_components as dbc
+
+
+from components.general_view import general_view
+from components.location_compare_view import location_compare_view
+from components.scrape_view import scrape_view
 
 #Create app
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -11,14 +16,22 @@ server = app.server
 
 #Add layout
 app.layout = html.Div([
+    dbc.CardHeader([
+        html.H1("Analisis de publicaciones de Alquier sobre la ciudad de buenos aires"),
+    ]),
+    html.Hr(),
     dcc.Tabs([
         dcc.Tab(
             label="General View",
             children=general_view
         ),
         dcc.Tab(
-            label="Compact Information",
+            label="Compact View",
             children=location_compare_view
+        ),
+        dcc.Tab(
+            label="Scrape View",
+            children=scrape_view
         ),
     ])
 ])
