@@ -7,6 +7,18 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_USERNAME = os.getenv("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
+
+
 BOT_NAME = "scanHouse"
 
 SPIDER_MODULES = ["scanHouse.spiders"]
@@ -56,9 +68,7 @@ ROBOTSTXT_OBEY = False
 #}
 
 
-CONNECTION_STRING = "sqlite:///scan_house.db"
-
-
+CONNECTION_STRING = f'postgresql+psycopg2://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_HOST}/{DATABASE_NAME}'
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html

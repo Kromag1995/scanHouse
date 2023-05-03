@@ -5,9 +5,7 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-import sqlite3
-from .models import *
+from .models import db_connect, create_table, Prop
 from sqlalchemy.orm import sessionmaker
 
 
@@ -25,8 +23,11 @@ class ScanhousePipeline:
         prop.m2_total = float(item.get("m2_total", 1))
         prop.m2_cub = float(item.get("m2_cub", 1))
         prop.direction = item.get("direction")
-        prop.location = item.get("location", "").lower().strip().replace("ú", "u")
+        prop.location = item.get("location", "").lower().strip()\
+            .replace("ú", "u")\
+            .replace("centro / microcentro", "centro")
         prop.price = float(item.get("price", 1))
+        prop.original_price = float(item.get("price", 1))
         prop.expens = float(item.get("expens", 1))
         prop.currency = item.get("currency", "")
         prop.bedrooms = float(item.get("bedrooms", 1))
@@ -41,7 +42,8 @@ class ScanhousePipeline:
                     exist_prop.price = prop.price
                     session.add(exist_prop)
                     session.commit()
-        except Exception as ex:
+        except Exception as e:
+            print("ERROR", e)
             session.rollback()
         session.close()
         return item

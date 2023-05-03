@@ -30,7 +30,7 @@ class ZonapropSpider(scrapy.Spider):
         for i in url_containers:
             yield SplashRequest(self.props_url + i.xpath("./div/@data-to-posting").extract_first(),
                                 callback=self.parse_prop, headers=self.HEADERS)
-        url = response.xpath("//a[@class='sc-n5babu-2 gudFvk']/@href").extract_first()
+        url = response.xpath("//a[@data-qa='PAGING_NEXT']/@href").extract_first()
         if url:
             url = self.props_url + url
             yield SplashRequest(url, callback=self.parse, headers=self.HEADERS)
